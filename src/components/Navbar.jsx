@@ -1,9 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Search, User, Menu } from 'lucide-react';
+import { BookOpen, Search, User, Menu, LogOut } from 'lucide-react';
 import './Navbar.css';
 
 const Navbar = () => {
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
+    }, []);
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+    };
+
+    const getAvatarUrl = (url) => {
+        if (!url) return 'https://via.placeholder.com/40';
+        if (url.startsWith('http')) return url;
+        return `http://localhost:8080${url}`;
+    };
+
     return (
         <nav className="navbar glass">
             <div className="container nav-content">
@@ -19,11 +40,33 @@ const Navbar = () => {
 
                 <div className="nav-links">
                     <Link to="/genres">Thể loại</Link>
+                    {user?.roles?.includes('ADMIN') && (
+                        <Link to="/admin">Admin</Link>
+                    )}
+                    {(user?.roles?.includes('ADMIN') || user?.roles?.includes('STAFF')) && (
+                        <Link to="/staff">Staff</Link>
+                    )}
                     <Link to="/premium" className="premium-link">Premium</Link>
-                    <Link to="/login" className="login-btn">
-                        <User size={20} />
-                        <span>Đăng nhập</span>
-                    </Link>
+                    {user ? (
+                        <div className="user-profile">
+                            <img
+                                src={getAvatarUrl(user.avatar)}
+                                alt="Avatar"
+                                className="user-avatar"
+                                onError={(e) => { e.target.src = 'https://via.placeholder.com/40' }}
+                            />
+                            <span className="user-name">{user.username}</span>
+                            <button onClick={handleLogout} className="logout-btn" title="Đăng xuất">
+                                <LogOut size={20} />
+                            </button>
+                        </div>
+                    ) : (
+                        <Link to="/login" className="login-btn">
+                            <User size={20} />
+                            <span>Đăng nhập</span>
+                        </Link>
+                    )}
+
                     <button className="mobile-menu">
                         <Menu size={24} />
                     </button>
