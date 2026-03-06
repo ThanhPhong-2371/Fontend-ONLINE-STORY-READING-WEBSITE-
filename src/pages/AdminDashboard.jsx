@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StaffLayout } from '@/components/staff-layout';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
     const [stories, setStories] = useState([]);
@@ -223,10 +224,22 @@ const AdminDashboard = () => {
 
                             <div className="flex flex-row md:flex-col gap-2 shrink-0 relative z-10">
                                 <Button
+                                    asChild
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-12 w-12 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 rounded-2xl transition-all"
+                                    title="Quản lý chương"
+                                >
+                                    <Link to={`/staff/story/${story.id}/chapters`}>
+                                        <Settings className="h-5 w-5" />
+                                    </Link>
+                                </Button>
+                                <Button
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => handleOpenModal(story)}
-                                    className="h-12 w-12 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 rounded-2xl transition-all"
+                                    className="h-12 w-12 text-slate-400 hover:bg-amber-50 hover:text-amber-600 rounded-2xl transition-all"
+                                    title="Chỉnh sửa thông tin"
                                 >
                                     <Edit2 className="h-5 w-5" />
                                 </Button>
@@ -235,6 +248,7 @@ const AdminDashboard = () => {
                                     size="icon"
                                     onClick={() => handleDelete(story.id)}
                                     className="h-12 w-12 text-slate-400 hover:bg-rose-50 hover:text-rose-600 rounded-2xl transition-all"
+                                    title="Xóa truyện"
                                 >
                                     <Trash2 className="h-5 w-5" />
                                 </Button>
@@ -341,14 +355,14 @@ const AdminDashboard = () => {
 
                             <div
                                 className={`flex items-center gap-4 p-5 rounded-[2rem] border-2 transition-all cursor-pointer select-none ${formData.isPremium
-                                        ? 'bg-amber-50 border-amber-200 shadow-lg shadow-amber-500/5'
-                                        : 'bg-slate-50 border-transparent hover:bg-slate-100'
+                                    ? 'bg-amber-50 border-amber-200 shadow-lg shadow-amber-500/5'
+                                    : 'bg-slate-50 border-transparent hover:bg-slate-100'
                                     }`}
                                 onClick={() => setFormData(p => ({ ...p, isPremium: !p.isPremium }))}
                             >
                                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${formData.isPremium
-                                        ? 'bg-amber-500 text-white scale-110'
-                                        : 'bg-slate-200 text-slate-400'
+                                    ? 'bg-amber-500 text-white scale-110'
+                                    : 'bg-slate-200 text-slate-400'
                                     }`}>
                                     <Star size={18} fill={formData.isPremium ? "currentColor" : "none"} />
                                 </div>

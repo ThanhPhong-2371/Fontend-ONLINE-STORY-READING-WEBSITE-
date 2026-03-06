@@ -49,9 +49,12 @@ const StaffDashboard = () => {
                 author: Array.isArray(fullStory.author) ? fullStory.author.join(', ') : (fullStory.author || 'Đang cập nhật'),
                 description: fullStory.content ? fullStory.content.replace(/<[^>]*>?/gm, '') : '',
                 coverImage: `https://img.otruyenapi.com/uploads/comics/${fullStory.thumb_url}`,
-                status: fullStory.status === 'ongoing' ? 'ONGOING' : 'COMPLETED',
+                status: fullStory.status === 'ongoing' ? 'ONGOING' :
+                    fullStory.status === 'coming_soon' ? 'COMING_SOON' :
+                        fullStory.status === 'completed' ? 'COMPLETED' : 'ONGOING',
                 isPremium: false,
-                genres: fullStory.category ? fullStory.category.map(c => c.name) : []
+                genres: fullStory.category ? fullStory.category.map(c => c.name) : [],
+                chapters: fullStory.chapters
             };
 
             await otruyenService.importStory(storyToImport);
@@ -154,8 +157,8 @@ const StaffDashboard = () => {
                                     <Button
                                         variant={importingStates[story.slug] === 'success' ? 'outline' : 'default'}
                                         className={`h-12 px-6 rounded-2xl font-black transition-all ${importingStates[story.slug] === 'success'
-                                                ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'
-                                                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-100 hover:-translate-y-1'
+                                            ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'
+                                            : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-100 hover:-translate-y-1'
                                             }`}
                                         onClick={() => handleImport(story)}
                                         disabled={importingStates[story.slug] === 'loading' || importingStates[story.slug] === 'success'}
