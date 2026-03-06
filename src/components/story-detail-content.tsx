@@ -1,6 +1,4 @@
-
 import { useState } from "react"
-
 import { Link } from "react-router-dom"
 import {
   BookOpen,
@@ -15,20 +13,45 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import type { Story } from "@/lib/data"
-import { generateChapters, formatViews } from "@/lib/data"
+import { formatViews } from "@/lib/data"
 
+interface StoryDetailContentProps {
+  story: {
+    id: number;
+    title: string;
+    slug: string;
+    description: string;
+    coverImage: string;
+    author: string;
+    status: string;
+    isPremium: boolean;
+    viewCount: number;
+    genres: string[];
+    rating?: number;
+    updatedAt?: string;
+  };
+  initialChapters: any[];
+}
 
-
-export function StoryDetailContent({ story }: StoryDetailContentProps) {
+export function StoryDetailContent({ story, initialChapters }: StoryDetailContentProps) {
   const [showAllChapters, setShowAllChapters] = useState(false)
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
-  const chapters = generateChapters(story.chapters)
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
 
+  const chapters = initialChapters || []
   const displayedChapters = showAllChapters ? chapters : chapters.slice(0, 20)
-  const sortedChapters =
-    sortOrder === "desc" ? [...displayedChapters].reverse() : displayedChapters
+  const sortedChapters = sortOrder === "desc" ? [...displayedChapters].reverse() : displayedChapters
+
+  const formatStatus = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'COMPLETED': return 'Hoàn thành';
+      case 'ONGOING': return 'Đang ra';
+      case 'DROPPED': return 'Tạm ngưng';
+      case 'COMING_SOON': return 'Sắp ra mắt';
+      default: return status || 'Đang ra';
+    }
+  }
+
+  const displayUpdateDate = story.updatedAt || (chapters.length > 0 ? new Date(chapters[chapters.length - 1].createdAt).toLocaleDateString() : 'Vừa xong');
 
   return (
     <div>
@@ -37,12 +60,10 @@ export function StoryDetailContent({ story }: StoryDetailContentProps) {
         {/* Background Blur */}
         <div className="absolute inset-0">
           <img
-            src={story.cover}
+            src={story.coverImage || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=800&auto=format&fit=crop&q=60"}
             alt=""
-           
             className="absolute inset-0 w-full h-full object-cover opacity-20 blur-2xl"
-           
-           />
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-background/60 to-background" />
         </div>
 
@@ -50,15 +71,12 @@ export function StoryDetailContent({ story }: StoryDetailContentProps) {
           <div className="flex flex-col gap-6 md:flex-row md:gap-8">
             {/* Cover */}
             <div className="flex-shrink-0 self-center md:self-start">
-              <div className="relative h-72 w-48 overflow-hidden rounded-lg shadow-2xl md:h-80 md:w-56">
+              <div className="relative h-72 w-48 overflow-hidden rounded-lg shadow-2xl md:h-80 md:w-56 bg-muted">
                 <img
-                  src={story.cover}
+                  src={story.coverImage || "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=800&auto=format&fit=crop&q=60"}
                   alt={story.title}
-                 
                   className="absolute inset-0 w-full h-full object-cover"
-                 
-                 
-                 />
+                />
               </div>
             </div>
 
@@ -68,68 +86,73 @@ export function StoryDetailContent({ story }: StoryDetailContentProps) {
                 {story.title}
               </h1>
               <p className="mt-2 text-center text-sm text-muted-foreground md:text-left">
-                Tac gia: <span className="font-medium text-foreground">{story.author}</span>
+                Tác giả: <span className="font-medium text-foreground">{story.author || "Đang cập nhật"}</span>
               </p>
 
               {/* Stats */}
               <div className="mt-4 flex flex-wrap items-center justify-center gap-4 md:justify-start">
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <Star className="h-4 w-4 fill-accent text-accent" />
-                  <span className="font-semibold text-foreground">{story.rating}</span>
+                  <span className="font-semibold text-foreground">{story.rating || "4.5"}</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <Eye className="h-4 w-4" />
-                  <span>{formatViews(story.views)} luot doc</span>
+                  <span>{formatViews(story.viewCount)} lượt đọc</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <BookOpen className="h-4 w-4" />
-                  <span>{story.chapters} chuong</span>
+                  <span>{chapters.length} chương</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <Clock className="h-4 w-4" />
-                  <span>{story.updatedAt}</span>
+                  <span>{displayUpdateDate}</span>
                 </div>
               </div>
 
               {/* Tags */}
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2 md:justify-start">
                 <Badge
-                  variant={story.status === "completed" ? "default" : "secondary"}
+                  variant={story.status?.toUpperCase() === "COMPLETED" ? "default" : "secondary"}
                 >
-                  {story.status === "completed" ? "Hoan Thanh" : "Dang Ra"}
+                  {formatStatus(story.status)}
                 </Badge>
-                {story.tags.map((tag) => (
-                  <Badge key={tag} variant="outline">
-                    {tag}
+                {story.isPremium && (
+                  <Badge variant="destructive" className="bg-yellow-500 text-white border-none">
+                    Premium
+                  </Badge>
+                )}
+                {story.genres?.map((genre) => (
+                  <Badge key={genre} variant="outline">
+                    {genre}
                   </Badge>
                 ))}
               </div>
 
               {/* Description */}
-              <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-                {story.description}
-              </p>
+              <div className="mt-5 text-sm leading-relaxed text-muted-foreground max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                {story.description || "Chưa có mô tả cho truyện này."}
+              </div>
 
               {/* Actions */}
               <div className="mt-6 flex flex-wrap items-center justify-center gap-3 md:justify-start">
-                <Button asChild size="lg" className="font-medium">
-                  <Link to={`/story/${story.id}/read/1`}>
+                <Button asChild size="lg" className="font-medium" disabled={chapters.length === 0}>
+                  <Link to={`/story/${story.id}/read/${chapters[0]?.id || 1}`}>
                     <BookOpen className="mr-2 h-4 w-4" />
-                    Doc Tu Dau
+                    Đọc Từ Đầu
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="font-medium">
-                  <Link to={`/story/${story.id}/read/${story.chapters > 1 ? story.chapters : 1}`}>
-                    Doc Moi Nhat
+                <Button asChild variant="outline" size="lg" className="font-medium" disabled={chapters.length === 0}>
+                  <Link to={`/story/${story.id}/read/${chapters[chapters.length - 1]?.id || 1}`}>
+                    Đọc Mới Nhất
                   </Link>
                 </Button>
                 <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
                   <Heart className="h-5 w-5" />
-                  <span className="sr-only">Yeu thich</span>
+                  <span className="sr-only">Yêu thích</span>
                 </Button>
                 <Button variant="ghost" size="icon" className="text-muted-foreground">
                   <Share2 className="h-5 w-5" />
-                  <span className="sr-only">Chia se</span>
+                  <span className="sr-only">Chia sẻ</span>
                 </Button>
               </div>
             </div>
@@ -145,10 +168,10 @@ export function StoryDetailContent({ story }: StoryDetailContentProps) {
             <div className="flex items-center gap-2">
               <List className="h-5 w-5 text-primary" />
               <h2 className="font-serif text-lg font-semibold text-foreground">
-                Danh Sach Chuong
+                Danh Sách Chương
               </h2>
               <span className="text-sm text-muted-foreground">
-                ({story.chapters} chuong)
+                ({chapters.length} chương)
               </span>
             </div>
             <Button
@@ -159,11 +182,11 @@ export function StoryDetailContent({ story }: StoryDetailContentProps) {
             >
               {sortOrder === "desc" ? (
                 <>
-                  Moi nhat <ChevronDown className="ml-1 h-3.5 w-3.5" />
+                  Mới nhất <ChevronDown className="ml-1 h-3.5 w-3.5" />
                 </>
               ) : (
                 <>
-                  Cu nhat <ChevronUp className="ml-1 h-3.5 w-3.5" />
+                  Cũ nhất <ChevronUp className="ml-1 h-3.5 w-3.5" />
                 </>
               )}
             </Button>
@@ -171,25 +194,28 @@ export function StoryDetailContent({ story }: StoryDetailContentProps) {
 
           {/* Chapter Items */}
           <div className="divide-y divide-border">
-            {sortedChapters.map((chapter) => (
-              <Link
-                key={chapter.id}
-                href={`/story/${story.id}/read/${chapter.id}`}
-                className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-secondary/50"
-              >
-                <span className="text-sm text-foreground hover:text-primary">
-                  {chapter.title}
-                </span>
-                <div className="flex items-center gap-4">
-                  <span className="hidden text-xs text-muted-foreground sm:inline">
-                    {formatViews(chapter.views)} luot doc
+            {chapters.length > 0 ? (
+              sortedChapters.map((chapter) => (
+                <Link
+                  key={chapter.id}
+                  to={`/story/${story.id}/read/${chapter.id}`}
+                  className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-secondary/50"
+                >
+                  <span className="text-sm text-foreground hover:text-primary">
+                    Chương {chapter.chapterNumber}: {chapter.title}
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    {chapter.createdAt}
-                  </span>
-                </div>
-              </Link>
-            ))}
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(chapter.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="p-8 text-center text-muted-foreground italic">
+                Chưa có chương nào được cập nhật.
+              </div>
+            )}
           </div>
 
           {/* Show More */}
@@ -200,7 +226,7 @@ export function StoryDetailContent({ story }: StoryDetailContentProps) {
                 onClick={() => setShowAllChapters(true)}
                 className="font-medium"
               >
-                Xem them {chapters.length - 20} chuong
+                Xem thêm {chapters.length - 20} chương
                 <ChevronDown className="ml-1 h-4 w-4" />
               </Button>
             </div>

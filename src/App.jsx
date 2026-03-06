@@ -9,6 +9,10 @@ import Login from './pages/Login';
 import StaffDashboard from './pages/StaffDashboard';
 import AdminGenreManagement from './pages/AdminGenreManagement';
 import StoryDetail from './pages/StoryDetail';
+import CategoryPage from './pages/CategoryPage';
+import StaffChapterManagement from './pages/StaffChapterManagement';
+import Profile from './pages/Profile';
+import ReadStory from './pages/ReadStory';
 import './App.css';
 
 import ProtectedRoute from './components/ProtectedRoute';
@@ -21,8 +25,7 @@ function App() {
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route
-              path="/admin"
+            <Route path="/admin"
               element={
                 <ProtectedRoute allowedRoles={['ADMIN']}>
                   <AdminUserManagement />
@@ -30,6 +33,9 @@ function App() {
               }
             />
             <Route path="/story/:id" element={<StoryDetail />} />
+            <Route path="/story/:storyId/read/:chapterId" element={<ReadStory />} />
+            <Route path="/category/:slug" element={<CategoryPage />} />
+            <Route path="/search" element={<CategoryPage />} />
             <Route
               path="/staff"
               element={
@@ -52,6 +58,22 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
                   <AdminGenreManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/staff/story/:storyId/chapters"
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+                  <StaffChapterManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'STAFF', 'USER']}>
+                  <Profile />
                 </ProtectedRoute>
               }
             />

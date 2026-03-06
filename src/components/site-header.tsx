@@ -5,7 +5,7 @@ import { BookOpen, Search, Menu, X, User, ChevronDown, LogOut, LayoutDashboard, 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { genreService } from "@/services/api"
+import { genreService, getServerUrl } from "@/services/api"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +40,14 @@ export function SiteHeader() {
     fetchGenres()
   }, [])
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q');
+    if (q) {
+      setSearchQuery(q);
+    }
+  }, [window.location.search]);
+
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -47,10 +55,11 @@ export function SiteHeader() {
     navigate('/login')
   }
 
-  const getAvatarUrl = (url: string) => {
-    if (!url) return 'https://github.com/shadcn.png'
-    if (url.startsWith('http')) return url
-    return `http://localhost:8080${url}`
+  const handleSearch = (e) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+    }
   }
 
   return (
@@ -95,15 +104,20 @@ export function SiteHeader() {
               ))}
             </div>
           </div>
-          <Link to="/category/all"
+          <Link to="/category/all?type=ongoing"
             className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             Truyen Moi
           </Link>
-          <Link to="/category/all"
+          <Link to="/category/all?type=completed"
             className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             Hoan Thanh
+          </Link>
+          <Link to="/category/all?type=premium"
+            className="rounded-md px-3 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 font-bold"
+          >
+            Premium ✨
           </Link>
         </nav>
 
@@ -115,6 +129,7 @@ export function SiteHeader() {
               placeholder="Tim truyen..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearch}
               className="w-56 bg-secondary pl-9 text-sm"
             />
           </div>
@@ -124,7 +139,7 @@ export function SiteHeader() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src={getAvatarUrl(user.avatar)} alt={user.username} />
+                    <AvatarImage src={getServerUrl(user.avatar)} alt={user.username} />
                     <AvatarFallback className="bg-primary/10 text-primary uppercase">
                       {user.username.charAt(0)}
                     </AvatarFallback>
@@ -214,6 +229,7 @@ export function SiteHeader() {
               placeholder="Tim truyen..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearch}
               className="bg-secondary pl-9"
               autoFocus
             />
@@ -265,7 +281,7 @@ export function SiteHeader() {
               <div className="mt-4 border-t border-border pt-4 px-3">
                 <div className="flex items-center gap-3 mb-4">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={getAvatarUrl(user.avatar)} alt={user.username} />
+                    <AvatarImage src={getServerUrl(user.avatar)} alt={user.username} />
                     <AvatarFallback className="bg-primary/10 text-primary uppercase">
                       {user.username.charAt(0)}
                     </AvatarFallback>
