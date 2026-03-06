@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { BookOpen, Search, Menu, X, User, ChevronDown, LogOut, LayoutDashboard, Settings } from "lucide-react"
+import { BookOpen, Search, Menu, X, User, ChevronDown, LogOut, LayoutDashboard, Settings, Crown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -114,7 +114,7 @@ export function SiteHeader() {
           >
             Hoan Thanh
           </Link>
-          <Link to="/category/all?type=premium"
+          <Link to="/premium"
             className="rounded-md px-3 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 font-bold"
           >
             Premium ✨
@@ -163,12 +163,22 @@ export function SiteHeader() {
                   </Link>
                 </DropdownMenuItem>
                 {user.roles?.some(r => r.name === 'ROLE_ADMIN' || r.name === 'ROLE_STAFF') && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin" className="cursor-pointer">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      <span>Quản trị viên</span>
-                    </Link>
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="cursor-pointer">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        <span>Quản trị viên</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    {user.roles?.some(r => r.name === 'ROLE_ADMIN' || r.name === 'ROLE_STAFF') && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/staff/premium" className="cursor-pointer">
+                          <Crown className="mr-2 h-4 w-4 text-amber-500" />
+                          <span>Quản lý Premium</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                  </>
                 )}
                 <DropdownMenuItem asChild>
                   <Link to="/settings" className="cursor-pointer">

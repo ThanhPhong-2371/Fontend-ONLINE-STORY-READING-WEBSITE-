@@ -107,6 +107,14 @@ export const userService = {
     updateRole: (userId, roleIds) => api.post(`/admin/users/${userId}/roles`, roleIds)
 };
 
+export const premiumPackageService = {
+    getAll: () => api.get('/premium/packages'),
+    getById: (id) => api.get(`/premium/packages/${id}`),
+    create: (pkg) => api.post('/premium/packages', pkg),
+    update: (id, pkg) => api.put(`/premium/packages/${id}`, pkg),
+    delete: (id) => api.delete(`/premium/packages/${id}`),
+};
+
 export const otruyenService = {
     search: (keyword) => axios.get(`https://otruyenapi.com/v1/api/tim-kiem?keyword=${keyword}`),
     getDetail: (slug) => axios.get(`https://otruyenapi.com/v1/api/truyen-tranh/${slug}`),

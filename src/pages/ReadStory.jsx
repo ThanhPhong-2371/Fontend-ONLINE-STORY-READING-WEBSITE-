@@ -37,10 +37,39 @@ const ReadStory = () => {
 
             // Fetch story and chapters for navigation
             const storyRes = await storyService.getById(storyId);
-            setStory(storyRes.data);
+            const currentStory = storyRes.data;
+            setStory(currentStory);
 
             const allChaptersRes = await chapterService.getByStory(storyId, 0, 1000);
             setChapters(allChaptersRes.data.content || []);
+
+            // Check Premium Access
+            if (currentStory.isPremium) {
+                const localUser = JSON.parse(localStorage.getItem('user'));
+                if (!localUser) {
+                    setError("Truyện này thuộc nhóm Premium VIP. Bạn cần đăng nhập và mua gói cài đặt mở rộng để đọc.");
+                    setLoading(false);
+                    return;
+                }
+                const isAdminOrStaff = localUser.roles?.includes('ADMIN') || localUser.roles?.includes('STAFF');
+                if (!isAdminOrStaff) {
+                    try {
+                        const { userService } = await import('../services/api');
+                        const profileRes = await userService.getProfile();
+                        const expiry = new Date(profileRes.data.premiumExpiry);
+                        const isPremiumValid = profileRes.data.premiumExpiry && expiry > new Date();
+                        if (!isPremiumValid) {
+                            setError("Rất tiếc! Truyện này chỉ dành cho tài khoản VIP. Hãy nâng cấp Premium để trải nghiệm không giới hạn.");
+                            setLoading(false);
+                            return;
+                        }
+                    } catch (e) {
+                        setError("Vui lòng đăng nhập lại để xác thực phiên bản Premium.");
+                        setLoading(false);
+                        return;
+                    }
+                }
+            }
 
             // Handle content (Images or Text)
             if (currentChapter.content && (currentChapter.content.startsWith('http') || currentChapter.content.includes('otruyenapi.com'))) {
