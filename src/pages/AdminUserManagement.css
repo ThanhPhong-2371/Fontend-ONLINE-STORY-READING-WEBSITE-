@@ -151,6 +151,12 @@
     border: 1px solid #bfdbfe;
 }
 
+.role-badge.staff {
+    background: #fdf2f8;
+    color: #db2777;
+    border: 1px solid #fbcfe8;
+}
+
 .status-badge.active {
     background: #ecfdf5;
     color: #059669;
