@@ -13,6 +13,8 @@ import CategoryPage from './pages/CategoryPage';
 import StaffChapterManagement from './pages/StaffChapterManagement';
 import Profile from './pages/Profile';
 import ReadStory from './pages/ReadStory';
+import PremiumPricing from './pages/PremiumPricing';
+import AdminPremiumManagement from './pages/AdminPremiumManagement';
 import './App.css';
 
 import ProtectedRoute from './components/ProtectedRoute';
@@ -80,7 +82,15 @@ function App() {
             <Route path="/login" element={<Login />} />
             {/* Add more routes as you build them */}
             <Route path="/genres" element={<div className="container mx-auto px-4 py-20"><h2>Trang Thể Loại đang phát triển...</h2></div>} />
-            <Route path="/premium" element={<div className="container mx-auto px-4 py-20"><h2>Trang Premium đang phát triển...</h2></div>} />
+            <Route path="/premium" element={<PremiumPricing />} />
+            <Route
+              path="/staff/premium"
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+                  <AdminPremiumManagement />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </main>
         <SiteFooter />

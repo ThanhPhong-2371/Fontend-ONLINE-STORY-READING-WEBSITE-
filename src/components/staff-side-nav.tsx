@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, LayoutGrid, Download, ChevronRight, Sparkles, Activity, Globe, Info } from 'lucide-react';
+import { BookOpen, LayoutGrid, Download, ChevronRight, Sparkles, Activity, Globe, Info, Crown } from 'lucide-react';
 
 export function StaffSideNav() {
     const location = useLocation();
@@ -9,6 +9,7 @@ export function StaffSideNav() {
         { to: "/staff", label: "Quản lý truyện", icon: BookOpen, desc: "Chỉnh sửa & quản lý nội dung" },
         { to: "/staff/genres", label: "Quản lý thể loại", icon: LayoutGrid, desc: "Phân loại kho truyện" },
         { to: "/staff/import", label: "Import Tự động", icon: Download, desc: "Đồng bộ từ đối tác" },
+        { to: "/staff/premium", label: "Quản lý Premium", icon: Crown, desc: "Quản lý gói cước & doanh thu" },
     ];
 
     return (
@@ -40,8 +41,8 @@ export function StaffSideNav() {
                                     key={link.to}
                                     to={link.to}
                                     className={`group flex items-center justify-between gap-3 px-4 py-3 rounded-2xl transition-all duration-300 ${isActive
-                                            ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-200"
-                                            : "text-slate-600 hover:bg-slate-50 hover:text-indigo-600"
+                                        ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-200"
+                                        : "text-slate-600 hover:bg-slate-50 hover:text-indigo-600"
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
