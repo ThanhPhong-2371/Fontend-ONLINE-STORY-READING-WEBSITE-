@@ -102,6 +102,17 @@ const ReadStory = () => {
         } finally {
             setLoading(false);
             window.scrollTo(0, 0);
+
+            // Save reading progress if logged in
+            try {
+                const localUser = JSON.parse(localStorage.getItem('user'));
+                if (localUser) {
+                    const { readingProgressService } = await import('../services/api');
+                    await readingProgressService.saveProgress(storyId, chapterId);
+                }
+            } catch (e) {
+                console.error("Failed to save progress", e);
+            }
         }
     };
 

@@ -107,14 +107,14 @@ const Login = () => {
                         <TabsContent value="login">
                             <form onSubmit={(e) => handleAuth('login', e)} className="space-y-5">
                                 <div className="space-y-2">
-                                    <Label htmlFor="login-username">Tên đăng nhập</Label>
+                                    <Label htmlFor="login-username">Tên đăng nhập / Email</Label>
                                     <div className="relative">
                                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                         <Input
                                             id="login-username"
                                             name="username"
                                             type="text"
-                                            placeholder="admin"
+                                            placeholder="admin@example.com hoặc admin"
                                             className="pl-10 h-11 bg-muted/30 border-border/50 focus:border-primary/50 transition-colors"
                                             value={formData.username}
                                             onChange={handleInputChange}
@@ -246,7 +246,11 @@ const Login = () => {
                     </div>
 
                     <div className="flex gap-4 w-full">
-                        <Button variant="outline" className="flex-1 h-10 border-border/50 hover:bg-muted/50">
+                        <Button
+                            variant="outline"
+                            className="flex-1 h-10 border-border/50 hover:bg-muted/50"
+                            onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
+                        >
                             Google
                         </Button>
                         <Button variant="outline" className="flex-1 h-10 border-border/50 hover:bg-muted/50">

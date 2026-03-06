@@ -114,7 +114,7 @@ const Profile = () => {
     if (loading) {
         return (
             <div className="min-h-screen py-20 flex flex-col items-center justify-center gap-4 text-slate-400">
-                <Loader2 className="h-10 w-10 animate-spin text-indigo-500" />
+                <Loader2 className="h-10 w-10 animate-spin text-amber-500" />
                 <p className="font-bold uppercase tracking-widest text-xs">Đang đồng bộ hồ sơ...</p>
             </div>
         );
@@ -130,12 +130,18 @@ const Profile = () => {
                 </div>
             )}
 
-            <div className="max-w-4xl mx-auto">
-                <div className="bg-white rounded-[3rem] shadow-xl shadow-indigo-500/5 border border-slate-100 overflow-hidden">
-                    <div className="relative h-48 bg-gradient-to-r from-indigo-600 to-purple-700">
-                        <div className="absolute -bottom-16 left-12">
-                            <div className="relative group">
-                                <div className="w-32 h-32 rounded-[2.5rem] border-4 border-white overflow-hidden shadow-2xl bg-white">
+            <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-8">
+                {/* Left Panel - Profile Card */}
+                <div className="w-full md:w-1/3">
+                    <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden sticky top-28">
+                        <div className="h-32 bg-gradient-to-br from-amber-600 via-amber-700 to-orange-900 relative">
+                            {/* Decorative pattern */}
+                            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white to-transparent mix-blend-overlay"></div>
+                        </div>
+
+                        <div className="px-6 pb-8 text-center relative">
+                            <div className="relative inline-block group -mt-16 mb-4">
+                                <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-white overflow-hidden">
                                     <img
                                         src={avatarPreview || "https://via.placeholder.com/150"}
                                         alt="Avatar"
@@ -147,8 +153,9 @@ const Profile = () => {
                                     />
                                 </div>
                                 <button
+                                    type="button"
                                     onClick={handleAvatarClick}
-                                    className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                                 >
                                     <Camera className="text-white h-8 w-8" />
                                 </button>
@@ -160,110 +167,115 @@ const Profile = () => {
                                     onChange={handleFileChange}
                                 />
                             </div>
+
+                            <h1 className="text-2xl font-black text-slate-800 tracking-tight">{profile?.fullName || profile?.username}</h1>
+                            <p className="text-sm font-medium text-slate-500 mt-1 mb-5">@{profile?.username}</p>
+
+                            <div className="flex justify-center gap-2 mb-6">
+                                {profile?.premiumExpiry && new Date(profile.premiumExpiry) > new Date() ? (
+                                    <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-none font-bold flex items-center gap-1.5 px-3 py-1">
+                                        <Sparkles size={12} fill="currentColor" /> Premium Member
+                                    </Badge>
+                                ) : (
+                                    <Badge className="bg-slate-100 text-slate-600 hover:bg-slate-200 border-none font-bold px-3 py-1">
+                                        Free Account
+                                    </Badge>
+                                )}
+                            </div>
+
+                            <div className="border-t border-slate-100 pt-5 text-left space-y-3">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px] flex items-center gap-1.5"><Calendar size={12} /> Ngày tham gia</span>
+                                    <span className="font-semibold text-slate-700">{new Date(profile?.createdAt).toLocaleDateString('vi-VN')}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px] flex items-center gap-1.5"><Mail size={12} /> Email</span>
+                                    <span className="font-semibold text-slate-700 truncate max-w-[140px]">{profile?.email}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <div className="pt-20 px-12 pb-12">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-                            <div>
-                                <h1 className="text-4xl font-black text-slate-900 tracking-tight">{profile?.fullName || profile?.username}</h1>
-                                <p className="text-slate-400 font-bold flex items-center gap-2 mt-2">
-                                    <Badge className="bg-indigo-50 text-indigo-600 border-none hover:bg-indigo-50">@{profile?.username}</Badge>
-                                    <span className="text-xs uppercase tracking-widest">{profile?.roles?.join(' • ')}</span>
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-6">
-                                <div className="text-center">
-                                    <p className="text-xs font-black text-slate-300 uppercase tracking-widest mb-1">Thành viên từ</p>
-                                    <p className="text-sm font-bold text-slate-700">{new Date(profile?.createdAt).toLocaleDateString('vi-VN')}</p>
-                                </div>
-                                <div className="w-px h-10 bg-slate-100" />
-                                <div className="text-center">
-                                    <p className="text-xs font-black text-slate-300 uppercase tracking-widest mb-1">Loại tài khoản</p>
-                                    {profile?.premiumExpiry && new Date(profile.premiumExpiry) > new Date() ? (
-                                        <Badge className="bg-amber-100 text-amber-600 border-none hover:bg-amber-100 font-bold flex items-center gap-1">
-                                            <Sparkles size={10} fill="currentColor" /> VIP Member
-                                        </Badge>
-                                    ) : (
-                                        <Badge className="bg-emerald-50 text-emerald-600 border-none hover:bg-emerald-50 font-bold">Free User</Badge>
-                                    )}
-                                </div>
-                            </div>
+                {/* Right Panel - Settings Form */}
+                <div className="w-full md:w-2/3">
+                    <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-10">
+                        <div className="mb-8 border-b border-slate-100 pb-6">
+                            <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3">
+                                <User className="text-amber-600 h-6 w-6" /> Thiết Lập Hồ Sơ
+                            </h2>
+                            <p className="text-slate-500 text-sm mt-2 font-medium">Quản lý thông tin cá nhân và bảo mật tài khoản của bạn.</p>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-3">
-                                    <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1 flex items-center gap-2">
-                                        <User size={12} /> Họ và tên
-                                    </label>
-                                    <Input
-                                        name="fullName"
-                                        value={formData.fullName}
-                                        onChange={handleInputChange}
-                                        className="h-14 rounded-2xl bg-slate-50 border-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 font-bold"
-                                        placeholder="Tên của bạn..."
-                                    />
-                                </div>
-                                <div className="space-y-3">
-                                    <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1 flex items-center gap-2">
-                                        <Mail size={12} /> Địa chỉ Email
-                                    </label>
-                                    <Input
-                                        name="email"
-                                        type="email"
-                                        value={formData.email}
-                                        onChange={handleInputChange}
-                                        className="h-14 rounded-2xl bg-slate-50 border-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 font-bold"
-                                        placeholder="email@example.com"
-                                    />
+                            {/* Personal Info */}
+                            <div className="space-y-6">
+                                <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Thông tin cơ bản</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2.5">
+                                        <label className="text-[12px] font-bold text-slate-600 ml-1">Họ và tên hiển thị</label>
+                                        <Input
+                                            name="fullName"
+                                            value={formData.fullName}
+                                            onChange={handleInputChange}
+                                            className="h-12 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium transition-all"
+                                            placeholder="Tên của bạn..."
+                                        />
+                                    </div>
+                                    <div className="space-y-2.5">
+                                        <label className="text-[12px] font-bold text-slate-600 ml-1">Địa chỉ Email</label>
+                                        <Input
+                                            name="email"
+                                            type="email"
+                                            value={formData.email}
+                                            onChange={handleInputChange}
+                                            className="h-12 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium transition-all"
+                                            placeholder="email@example.com"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="pt-8 border-t border-slate-100">
-                                <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">
-                                    <Shield size={20} className="text-indigo-500" />
-                                    Đổi mật khẩu
-                                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">(Bỏ trống nếu không đổi)</span>
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className="space-y-3">
-                                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1 flex items-center gap-2">
-                                            <Key size={12} /> Mật khẩu mới
-                                        </label>
+                            {/* Password section */}
+                            <div className="space-y-6 pt-6 border-t border-slate-100">
+                                <div>
+                                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Bảo mật</h3>
+                                    <p className="text-xs text-amber-600 mt-1 font-medium bg-amber-50 inline-block px-2 py-1 rounded-md">Bỏ trống nếu không thay đổi mật khẩu</p>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2.5">
+                                        <label className="text-[12px] font-bold text-slate-600 ml-1">Mật khẩu mới</label>
                                         <Input
                                             name="newPassword"
                                             type="password"
                                             value={formData.newPassword}
                                             onChange={handleInputChange}
-                                            className="h-14 rounded-2xl bg-slate-50 border-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20"
+                                            className="h-12 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium transition-all"
                                             placeholder="••••••••"
                                         />
                                     </div>
-                                    <div className="space-y-3">
-                                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1 flex items-center gap-2">
-                                            <Check size={12} /> Xác nhận mật khẩu
-                                        </label>
+                                    <div className="space-y-2.5">
+                                        <label className="text-[12px] font-bold text-slate-600 ml-1">Xác nhận mật khẩu</label>
                                         <Input
                                             name="confirmPassword"
                                             type="password"
                                             value={formData.confirmPassword}
                                             onChange={handleInputChange}
-                                            className="h-14 rounded-2xl bg-slate-50 border-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20"
+                                            className="h-12 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium transition-all"
                                             placeholder="••••••••"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex justify-end pt-8">
+                            <div className="pt-8 flex justify-end">
                                 <Button
                                     type="submit"
                                     disabled={saving}
-                                    className="h-14 px-12 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-xl shadow-indigo-200 transition-all hover:-translate-y-1"
+                                    className="h-12 px-8 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold shadow-md shadow-amber-900/10 transition-all hover:-translate-y-0.5"
                                 >
                                     {saving ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : <Save className="mr-2 h-5 w-5" />}
-                                    {saving ? 'Đang lưu...' : 'Lưu thay đổi hồ sơ ✨'}
+                                    {saving ? 'Đang lưu...' : 'Lưu Hồ Sơ'}
                                 </Button>
                             </div>
                         </form>
