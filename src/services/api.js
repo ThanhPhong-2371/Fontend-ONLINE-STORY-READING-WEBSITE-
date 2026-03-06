@@ -121,4 +121,10 @@ export const otruyenService = {
     importStory: (storyData) => api.post('/stories/import', storyData)
 };
 
+export const readingProgressService = {
+    getAll: () => api.get('/reading-progress'),
+    getByStory: (storyId) => api.get(`/reading-progress/${storyId}`),
+    saveProgress: (storyId, chapterId) => api.post(`/reading-progress/${storyId}/${chapterId}`),
+};
+
 export default api;

@@ -15,6 +15,7 @@ import Profile from './pages/Profile';
 import ReadStory from './pages/ReadStory';
 import PremiumPricing from './pages/PremiumPricing';
 import AdminPremiumManagement from './pages/AdminPremiumManagement';
+import OAuth2Redirect from './pages/OAuth2Redirect';
 import './App.css';
 
 import ProtectedRoute from './components/ProtectedRoute';
@@ -80,6 +81,7 @@ function App() {
               }
             />
             <Route path="/login" element={<Login />} />
+            <Route path="/oauth2/redirect" element={<OAuth2Redirect />} />
             {/* Add more routes as you build them */}
             <Route path="/genres" element={<div className="container mx-auto px-4 py-20"><h2>Trang Thể Loại đang phát triển...</h2></div>} />
             <Route path="/premium" element={<PremiumPricing />} />

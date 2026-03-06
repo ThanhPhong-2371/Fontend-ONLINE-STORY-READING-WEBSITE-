@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import {
   BookOpen,
@@ -40,6 +40,26 @@ export function StoryDetailContent({ story, initialChapters }: StoryDetailConten
   const chapters = initialChapters || []
   const displayedChapters = showAllChapters ? chapters : chapters.slice(0, 20)
   const sortedChapters = sortOrder === "desc" ? [...displayedChapters].reverse() : displayedChapters
+
+  const [readingProgress, setReadingProgress] = useState<any>(null)
+
+  useEffect(() => {
+    const fetchProgress = async () => {
+      try {
+        const localUser = JSON.parse(localStorage.getItem('user') || 'null');
+        if (localUser) {
+          const { readingProgressService } = await import('@/services/api');
+          const res = await readingProgressService.getByStory(story.id);
+          if (res.data && res.data.lastChapterId) {
+            setReadingProgress(res.data);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load reading progress", e);
+      }
+    };
+    fetchProgress();
+  }, [story.id]);
 
   const formatStatus = (status: string) => {
     switch (status?.toUpperCase()) {
@@ -135,12 +155,22 @@ export function StoryDetailContent({ story, initialChapters }: StoryDetailConten
 
               {/* Actions */}
               <div className="mt-6 flex flex-wrap items-center justify-center gap-3 md:justify-start">
-                <Button asChild size="lg" className="font-medium" disabled={chapters.length === 0}>
-                  <Link to={`/story/${story.id}/read/${chapters[0]?.id || 1}`}>
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    Đọc Từ Đầu
-                  </Link>
-                </Button>
+                {readingProgress ? (
+                  <Button asChild size="lg" className="font-medium">
+                    <Link to={`/story/${story.id}/read/${readingProgress.lastChapterId}`}>
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Tiếp tục (Chương {readingProgress.lastChapterNumber})
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button asChild size="lg" className="font-medium" disabled={chapters.length === 0}>
+                    <Link to={`/story/${story.id}/read/${chapters[0]?.id || 1}`}>
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Đọc Từ Đầu
+                    </Link>
+                  </Button>
+                )}
+
                 <Button asChild variant="outline" size="lg" className="font-medium" disabled={chapters.length === 0}>
                   <Link to={`/story/${story.id}/read/${chapters[chapters.length - 1]?.id || 1}`}>
                     Đọc Mới Nhất
