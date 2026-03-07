@@ -101,7 +101,7 @@ const PremiumPricing = () => {
                                         ${pkg.durationDays >= 30
                                             ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200'
                                             : 'bg-slate-900 hover:bg-black text-white'}`}
-                                    onClick={() => navigate(`/checkout/${pkg.id}`)}
+                                    onClick={() => navigate(`/checkout/${pkg.id}`, { state: { pkg } })}
                                 >
                                     Đăng ký gói {pkg.name} <ArrowRight size={16} className="ml-2" />
                                 </Button>
