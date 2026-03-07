@@ -16,6 +16,8 @@ import ReadStory from './pages/ReadStory';
 import PremiumPricing from './pages/PremiumPricing';
 import AdminPremiumManagement from './pages/AdminPremiumManagement';
 import OAuth2Redirect from './pages/OAuth2Redirect';
+import Checkout from './pages/Checkout';
+import AdminAnalytics from './pages/AdminAnalytics';
 import './App.css';
 
 import ProtectedRoute from './components/ProtectedRoute';
@@ -86,10 +88,26 @@ function App() {
             <Route path="/genres" element={<div className="container mx-auto px-4 py-20"><h2>Trang Thể Loại đang phát triển...</h2></div>} />
             <Route path="/premium" element={<PremiumPricing />} />
             <Route
+              path="/checkout/:packageId"
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'STAFF', 'USER']}>
+                  <Checkout />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/staff/premium"
               element={
                 <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
                   <AdminPremiumManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/analytics"
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN']}>
+                  <AdminAnalytics />
                 </ProtectedRoute>
               }
             />
