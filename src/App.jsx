@@ -18,6 +18,9 @@ import AdminPremiumManagement from './pages/AdminPremiumManagement';
 import OAuth2Redirect from './pages/OAuth2Redirect';
 import Checkout from './pages/Checkout';
 import AdminAnalytics from './pages/AdminAnalytics';
+import AdminLogs from './pages/AdminLogs';
+import AdminSettings from './pages/AdminSettings';
+import Favorites from './pages/Favorites';
 import ForgotPassword from './pages/ForgotPassword';
 import './App.css';
 
@@ -110,6 +113,30 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['ADMIN']}>
                   <AdminAnalytics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/logs"
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN']}>
+                  <AdminLogs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN']}>
+                  <AdminSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/favorites"
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'STAFF', 'USER']}>
+                  <Favorites />
                 </ProtectedRoute>
               }
             />

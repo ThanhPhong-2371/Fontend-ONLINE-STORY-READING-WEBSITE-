@@ -46,6 +46,11 @@ export function StoryDetailContent({ story, initialChapters }: StoryDetailConten
   const sortedChapters = sortOrder === "desc" ? [...displayedChapters].reverse() : displayedChapters
 
   const [readingProgress, setReadingProgress] = useState<any>(null)
+  const [isFavorite, setIsFavorite] = useState(false)
+  const [avgRating, setAvgRating] = useState(story.rating || 0)
+  const [ratingCount, setRatingCount] = useState(0)
+  const [userRating, setUserRating] = useState(0)
+  const [hoverRating, setHoverRating] = useState(0)
   const [isPremiumUser, setIsPremiumUser] = useState(false)
   const [checkingPremium, setCheckingPremium] = useState(true)
 
@@ -68,13 +73,32 @@ export function StoryDetailContent({ story, initialChapters }: StoryDetailConten
           }
 
           // Fetch progress
-          const { readingProgressService } = await import('@/services/api');
+          const { readingProgressService, favoriteService, ratingService } = await import('@/services/api');
           const progressRes = await readingProgressService.getByStory(story.id);
           if (progressRes.data && progressRes.data.lastChapterId) {
             setReadingProgress(progressRes.data);
           }
+
+          // Check favorite
+          const favRes = await favoriteService.check(story.id);
+          setIsFavorite(favRes.data);
+
+          // Get Rating
+          const ratingRes = await ratingService.getRating(story.id);
+          setAvgRating(ratingRes.data.averageRating);
+          setRatingCount(ratingRes.data.ratingCount);
+
+          const myRatingRes = await ratingService.getMyRating(story.id);
+          setUserRating(myRatingRes.data);
         } else {
           setIsPremiumUser(false);
+          setIsFavorite(false);
+          
+          // Still fetch public rating
+          const { ratingService } = await import('@/services/api');
+          const ratingRes = await ratingService.getRating(story.id);
+          setAvgRating(ratingRes.data.averageRating);
+          setRatingCount(ratingRes.data.ratingCount);
         }
       } catch (e) {
         console.error("Failed to load user data", e);
@@ -97,6 +121,30 @@ export function StoryDetailContent({ story, initialChapters }: StoryDetailConten
   }
 
   const displayUpdateDate = story.updatedAt || (chapters.length > 0 ? new Date(chapters[chapters.length - 1].createdAt).toLocaleDateString() : 'Vừa xong');
+
+  const handleToggleFavorite = async () => {
+    try {
+      const { favoriteService } = await import("@/services/api");
+      const res = await favoriteService.toggle(story.id);
+      setIsFavorite(res.data);
+    } catch (error) {
+      console.error("Failed to toggle favorite", error);
+      alert("Bạn cần đăng nhập để thực hiện tính năng này.");
+    }
+  }
+
+  const handleRate = async (stars: number) => {
+    try {
+      const { ratingService } = await import("@/services/api");
+      const res = await ratingService.rate(story.id, stars);
+      setAvgRating(res.data.averageRating);
+      setRatingCount(res.data.ratingCount);
+      setUserRating(stars);
+    } catch (error) {
+      console.error("Failed to rate", error);
+      alert("Bạn cần đăng nhập để đánh giá.");
+    }
+  }
 
   return (
     <div>
@@ -134,21 +182,37 @@ export function StoryDetailContent({ story, initialChapters }: StoryDetailConten
                 Tác giả: <span className="font-medium text-foreground">{story.author || "Đang cập nhật"}</span>
               </p>
 
-              {/* Stats */}
+              {/* Stats & Rating */}
               <div className="mt-4 flex flex-wrap items-center justify-center gap-4 md:justify-start">
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <Star className="h-4 w-4 fill-accent text-accent" />
-                  <span className="font-semibold text-foreground">{story.rating || "4.5"}</span>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-1 group/rating">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`h-5 w-5 cursor-pointer transition-all duration-200 ${
+                          star <= (hoverRating || userRating || Math.round(avgRating))
+                            ? "fill-amber-400 text-amber-400 scale-110"
+                            : "text-muted-foreground/40 hover:text-amber-200"
+                        }`}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        onClick={() => handleRate(star)}
+                      />
+                    ))}
+                    <span className="ml-2 font-black text-foreground text-lg">{avgRating.toFixed(1)}</span>
+                    <span className="text-xs text-muted-foreground font-medium">({ratingCount} đánh giá)</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <div className="h-4 w-px bg-border hidden md:block" />
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
                   <Eye className="h-4 w-4" />
                   <span>{formatViews(story.viewCount)} lượt đọc</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
                   <BookOpen className="h-4 w-4" />
                   <span>{chapters.length} chương</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
                   <Clock className="h-4 w-4" />
                   <span>{displayUpdateDate}</span>
                 </div>
@@ -201,8 +265,13 @@ export function StoryDetailContent({ story, initialChapters }: StoryDetailConten
                     Đọc Mới Nhất
                   </Link>
                 </Button>
-                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
-                  <Heart className="h-5 w-5" />
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={`transition-colors ${isFavorite ? 'text-rose-500 hover:text-rose-600' : 'text-muted-foreground hover:text-destructive'}`}
+                  onClick={handleToggleFavorite}
+                >
+                  <Heart className={`h-5 w-5 ${isFavorite ? 'fill-current' : ''}`} />
                   <span className="sr-only">Yêu thích</span>
                 </Button>
                 <Button variant="ghost" size="icon" className="text-muted-foreground">

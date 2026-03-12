@@ -20,8 +20,15 @@ export function RankingSection() {
     const fetchRanked = async () => {
       try {
         setLoading(true)
-        const response = await storyService.getAll(0, 10, activeTab)
-        setStories(response.data.content || [])
+        let data;
+        if (activeTab === "rating,desc") {
+          const response = await storyService.getTopRated(10)
+          data = response.data
+        } else {
+          const response = await storyService.getAll(0, 10, activeTab)
+          data = response.data.content
+        }
+        setStories(data || [])
       } catch (error) {
         console.error("Failed to fetch ranked stories:", error)
       } finally {
