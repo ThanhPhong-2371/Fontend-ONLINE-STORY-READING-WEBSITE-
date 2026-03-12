@@ -125,7 +125,7 @@ const Login = () => {
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
                                         <Label htmlFor="login-password">Mật khẩu</Label>
-                                        <a href="#" className="text-xs text-primary hover:underline">Quên mật khẩu?</a>
+                                        <Link to="/forgot-password" name="forgot-password-link" className="text-xs text-primary hover:underline">Quên mật khẩu?</Link>
                                     </div>
                                     <div className="relative">
                                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

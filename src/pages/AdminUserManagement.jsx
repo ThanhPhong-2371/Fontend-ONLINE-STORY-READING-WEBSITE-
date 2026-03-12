@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { userService } from '../services/api';
-import { Plus, Edit2, Trash2, Search, X, Check, AlertCircle, User as UserIcon, Lock, Unlock, Shield, Mail, BadgeCheck, ShieldAlert, Settings2, UserCog } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, X, Check, AlertCircle, User as UserIcon, Lock, Unlock, Shield, Mail, BadgeCheck, ShieldAlert, Settings2, UserCog, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AdminLayout } from '@/components/admin-layout';
@@ -227,14 +227,14 @@ const AdminUserManagement = () => {
                                 </div>
 
                                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-y-2 gap-x-6 mb-4">
-                                    <p className="text-sm text-slate-500 font-bold flex items-center gap-2">
+                                    <div className="text-sm text-slate-500 font-bold flex items-center gap-2">
                                         <div className="bg-slate-100 p-1.5 rounded-lg"><UserIcon size={14} className="text-indigo-500" /></div>
                                         {user.fullName || 'Chưa cập nhật tên'}
-                                    </p>
-                                    <p className="text-sm text-slate-500 font-bold flex items-center gap-2">
+                                    </div>
+                                    <div className="text-sm text-slate-500 font-bold flex items-center gap-2">
                                         <div className="bg-slate-100 p-1.5 rounded-lg"><Mail size={14} className="text-rose-400" /></div>
                                         {user.email}
-                                    </p>
+                                    </div>
                                 </div>
 
                                 <div className="flex items-center justify-center md:justify-start gap-2">

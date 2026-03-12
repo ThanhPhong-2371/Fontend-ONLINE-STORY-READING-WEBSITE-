@@ -83,6 +83,7 @@ export const authService = {
 export const userService = {
     getAll: (username = '') => api.get(`/admin/users${username ? `?username=${username}` : ''}`),
     getProfile: () => api.get('/users/me'),
+    requestOtp: () => api.post('/users/request-otp'),
     updateProfile: (profileData) => {
         const formData = new FormData();
         formData.append('fullName', profileData.fullName);
@@ -92,6 +93,9 @@ export const userService = {
         }
         if (profileData.newPassword) {
             formData.append('newPassword', profileData.newPassword);
+        }
+        if (profileData.otp) {
+            formData.append('otp', profileData.otp);
         }
         return api.put('/users/profile', formData, {
             headers: {

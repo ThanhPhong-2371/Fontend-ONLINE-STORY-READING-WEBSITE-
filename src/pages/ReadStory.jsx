@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { chapterService, storyService } from '../services/api';
-import { ChevronLeft, ChevronRight, List, Home, ArrowLeft, Loader2, Settings, MessageSquare, Share2, Heart, ExternalLink } from 'lucide-react';
+import { ChevronLeft, ChevronRight, List, Home, ArrowLeft, Loader2, Settings, MessageSquare, Share2, Heart, ExternalLink, Star, AlertCircle, Sparkles, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import axios from 'axios';
@@ -20,7 +20,7 @@ const ReadStory = () => {
 
     useEffect(() => {
         fetchData();
-        // Hide controls after 3 seconds
+      
         const timer = setTimeout(() => setShowControls(false), 3000);
         return () => clearTimeout(timer);
     }, [chapterId]);
@@ -30,75 +30,61 @@ const ReadStory = () => {
             setLoading(true);
             setError(null);
 
-            // Fetch current chapter
-            const chapterRes = await chapterService.getById(chapterId);
-            const currentChapter = chapterRes.data;
-            setChapter(currentChapter);
-
-            // Fetch story and chapters for navigation
+            // Fetch story first to check premium status
             const storyRes = await storyService.getById(storyId);
             const currentStory = storyRes.data;
             setStory(currentStory);
 
+            // Fetch chapters for navigation
             const allChaptersRes = await chapterService.getByStory(storyId, 0, 1000);
             setChapters(allChaptersRes.data.content || []);
 
-            // Check Premium Access
-            if (currentStory.isPremium) {
-                const localUser = JSON.parse(localStorage.getItem('user'));
-                if (!localUser) {
-                    setError("Truyện này thuộc nhóm Premium VIP. Bạn cần đăng nhập và mua gói cài đặt mở rộng để đọc.");
-                    setLoading(false);
-                    return;
-                }
-                const isAdminOrStaff = localUser.roles?.includes('ADMIN') || localUser.roles?.includes('STAFF');
-                if (!isAdminOrStaff) {
+            // Fetch current chapter
+            try {
+                const chapterRes = await chapterService.getById(chapterId);
+                const currentChapter = chapterRes.data;
+                setChapter(currentChapter);
+
+                // Handle content (Images or Text)
+                if (currentChapter.content && (currentChapter.content.startsWith('http') || currentChapter.content.includes('otruyenapi.com'))) {
+                    // It's likely an API URL for images
                     try {
-                        const { userService } = await import('../services/api');
-                        const profileRes = await userService.getProfile();
-                        const expiry = new Date(profileRes.data.premiumExpiry);
-                        const isPremiumValid = profileRes.data.premiumExpiry && expiry > new Date();
-                        if (!isPremiumValid) {
-                            setError("Rất tiếc! Truyện này chỉ dành cho tài khoản VIP. Hãy nâng cấp Premium để trải nghiệm không giới hạn.");
-                            setLoading(false);
-                            return;
+                        const imgDataRes = await axios.get(currentChapter.content);
+                        const g2iData = imgDataRes.data;
+
+                        if (g2iData.status === 'success' && g2iData.data) {
+                            const { domain_cdn, item } = g2iData.data;
+                            const constructedImages = item.chapter_image.map(img =>
+                                `${domain_cdn}/${item.chapter_path}/${img.image_file}`
+                            );
+                            setImages(constructedImages);
+                        } else {
+                            setImages([]);
                         }
-                    } catch (e) {
-                        setError("Vui lòng đăng nhập lại để xác thực phiên bản Premium.");
-                        setLoading(false);
-                        return;
-                    }
-                }
-            }
-
-            // Handle content (Images or Text)
-            if (currentChapter.content && (currentChapter.content.startsWith('http') || currentChapter.content.includes('otruyenapi.com'))) {
-                // It's likely an API URL for images
-                try {
-                    const imgDataRes = await axios.get(currentChapter.content);
-                    const g2iData = imgDataRes.data;
-
-                    if (g2iData.status === 'success' && g2iData.data) {
-                        const { domain_cdn, item } = g2iData.data;
-                        const constructedImages = item.chapter_image.map(img =>
-                            `${domain_cdn}/${item.chapter_path}/${img.image_file}`
-                        );
-                        setImages(constructedImages);
-                    } else {
-                        // Attempt fallback if structure is different
+                    } catch (err) {
+                        console.error("Failed to fetch image data:", err);
                         setImages([]);
                     }
-                } catch (err) {
-                    console.error("Failed to fetch image data:", err);
+                } else {
                     setImages([]);
                 }
-            } else {
-                setImages([]);
+            } catch (err) {
+                if (err.response && err.response.status === 403) {
+                    setError({
+                        type: 'PREMIUM_LOCKED',
+                        message: err.response.data || "Truyện này đã được khóa. Vui lòng mua gói Premium để tiếp tục đọc."
+                    });
+                } else {
+                    throw err;
+                }
             }
 
         } catch (err) {
             console.error("Data fetch error:", err);
-            setError("Không thể tải chương này. Vui lòng thử lại.");
+            setError({
+                type: 'GENERAL_ERROR',
+                message: "Không thể tải chương này. Vui lòng thử lại."
+            });
         } finally {
             setLoading(false);
             window.scrollTo(0, 0);
@@ -142,16 +128,62 @@ const ReadStory = () => {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center p-4">
-                <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/10 text-center max-w-md">
-                    <div className="w-16 h-16 bg-rose-500/20 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <ArrowLeft size={32} />
-                    </div>
-                    <h2 className="text-2xl font-black text-white mb-2">Oops! Có lỗi rồi</h2>
-                    <p className="text-slate-400 font-medium mb-8">{error}</p>
-                    <div className="flex flex-col gap-3">
-                        <Button onClick={() => navigate(`/story/${storyId}`)} className="h-12 rounded-xl bg-indigo-600 font-bold">Quay lại chi tiết truyện</Button>
-                        <Button variant="ghost" onClick={fetchData} className="text-slate-400 hover:text-white">Thử lại</Button>
+            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
+                {/* Subtle decorative elements for light theme */}
+                <div className="absolute top-[-5%] right-[-5%] w-[30%] h-[30%] bg-indigo-100 blur-[100px] rounded-full opacity-50" />
+                <div className="absolute bottom-[-5%] left-[-5%] w-[30%] h-[30%] bg-amber-100 blur-[100px] rounded-full opacity-50" />
+                
+                <div className="relative z-10 w-full max-w-lg">
+                    <div className="bg-white/80 backdrop-blur-xl p-12 rounded-[3.5rem] border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.05)] text-center">
+                        <div className={`w-28 h-28 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-2xl transition-transform hover:scale-110 duration-500 relative ${error.type === 'PREMIUM_LOCKED' ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-rose-500 text-white shadow-rose-200'}`}>
+                            {error.type === 'PREMIUM_LOCKED' ? <Lock size={52} /> : <AlertCircle size={52} />}
+                            {error.type === 'PREMIUM_LOCKED' && (
+                                <div className="absolute -top-1 -right-1 bg-amber-400 text-amber-950 p-2 rounded-full shadow-lg border-4 border-white">
+                                    <Star size={20} fill="currentColor" />
+                                </div>
+                            )}
+                        </div>
+                        
+                        <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4 tracking-tight leading-tight">
+                            {error.type === 'PREMIUM_LOCKED' ? 'Nội dung Premium' : 'Đã xảy ra lỗi'}
+                        </h2>
+                        
+                        <p className="text-slate-500 text-lg font-medium mb-10 leading-relaxed px-2">
+                            {error.message}
+                        </p>
+                        
+                        <div className="flex flex-col gap-4">
+                            {error.type === 'PREMIUM_LOCKED' ? (
+                                <>
+                                    <Button 
+                                        onClick={() => navigate('/premium')} 
+                                        className="h-16 rounded-[1.5rem] bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xl flex items-center justify-center gap-3 shadow-xl shadow-indigo-100 transition-all active:scale-95"
+                                    >
+                                        <Sparkles size={24} fill="currentColor" /> Nâng cấp ngay
+                                    </Button>
+                                    <Button 
+                                        variant="ghost" 
+                                        onClick={() => navigate(`/story/${storyId}`)} 
+                                        className="h-14 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-2xl font-bold"
+                                    >
+                                        Quay lại chi tiết truyện
+                                    </Button>
+                                </>
+                            ) : (
+                                <>
+                                    <Button onClick={() => navigate(`/story/${storyId}`)} className="h-16 rounded-[1.5rem] bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xl shadow-xl shadow-indigo-100">
+                                        Quay lại chi tiết truyện
+                                    </Button>
+                                    <Button variant="ghost" onClick={fetchData} className="h-14 text-slate-400 hover:text-slate-600 font-bold">Thử lại</Button>
+                                </>
+                            )}
+                        </div>
+
+                        {error.type === 'PREMIUM_LOCKED' && (
+                            <div className="mt-10 flex items-center justify-center gap-4 opacity-50">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400">TruyenHay Exclusive VIP</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
