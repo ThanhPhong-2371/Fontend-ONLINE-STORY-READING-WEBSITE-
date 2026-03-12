@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { BookOpen, Search, Menu, X, User, ChevronDown, LogOut, LayoutDashboard, Settings, Crown } from "lucide-react"
+import { BookOpen, Search, Menu, X, User, ChevronDown, LogOut, LayoutDashboard, Settings, Crown, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -117,7 +117,12 @@ export function SiteHeader() {
           <Link to="/premium"
             className="rounded-md px-3 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 font-bold"
           >
-            Premium ✨
+            Premium
+          </Link>
+          <Link to="/favorites"
+            className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground flex items-center gap-1.5"
+          >
+            Yêu thích
           </Link>
         </nav>
 
@@ -160,6 +165,12 @@ export function SiteHeader() {
                   <Link to="/profile" className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
                     <span>Hồ sơ của tôi</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/favorites" className="cursor-pointer">
+                    <Heart className="mr-2 h-4 w-4 text-rose-500" />
+                    <span>Truyện yêu thích</span>
                   </Link>
                 </DropdownMenuItem>
                 {user.roles?.some(r => r.name === 'ROLE_ADMIN' || r.name === 'ROLE_STAFF') && (
@@ -268,6 +279,12 @@ export function SiteHeader() {
               onClick={() => setIsMenuOpen(false)}
             >
               Hoan Thanh
+            </Link>
+            <Link to="/favorites"
+              className="rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground flex items-center"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Yêu thích
             </Link>
             <div className="py-1">
               <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">

@@ -5,7 +5,7 @@ import {
     TrendingUp, Users, CreditCard, DollarSign,
     ArrowUpRight, ArrowDownRight, Clock,
     CheckCircle2, XCircle, AlertCircle,
-    Calendar, Download, Filter, RefreshCcw
+    Calendar, Download, Filter, RefreshCcw, Trash2, Check, X
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,20 +19,84 @@ const AdminAnalytics = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [showAllModal, setShowAllModal] = useState(false);
+    const [allTransactions, setAllTransactions] = useState([]);
+    const [isDeleting, setIsDeleting] = useState(null);
+    const [period, setPeriod] = useState('all');
 
-    const fetchAnalytics = async () => {
+    const fetchAnalytics = async (targetPeriod = period) => {
         try {
             setRefreshing(true);
             const token = localStorage.getItem('token');
-            const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/admin/analytics`, {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/admin/analytics?period=${targetPeriod}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setData(response.data);
+            if (showAllModal) {
+                fetchAllTransactions();
+            }
         } catch (error) {
             console.error("Error fetching analytics:", error);
         } finally {
             setLoading(false);
             setRefreshing(false);
+        }
+    };
+
+    const handlePeriodChange = (newPeriod) => {
+        setPeriod(newPeriod);
+        fetchAnalytics(newPeriod);
+    };
+
+    const fetchAllTransactions = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/admin/transactions`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setAllTransactions(response.data);
+        } catch (error) {
+            console.error("Error fetching all transactions:", error);
+        }
+    };
+
+    const handleDeleteTransaction = async (id) => {
+        if (!window.confirm('Bạn có chắc chắn muốn xóa giao dịch này? Hành động này không thể hoàn tác.')) return;
+        
+        try {
+            setIsDeleting(id);
+            const token = localStorage.getItem('token');
+            await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/admin/transactions/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchAnalytics();
+        } catch (error) {
+            console.error("Error deleting transaction:", error);
+            alert("Không thể xóa giao dịch. Vui lòng thử lại.");
+        } finally {
+            setIsDeleting(null);
+        }
+    };
+
+    const handleExportExcel = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/admin/export-revenue`, {
+                headers: { Authorization: `Bearer ${token}` },
+                responseType: 'blob' // Important for file download
+            });
+
+            // Create a blob URL and trigger download
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `bao_cao_doanh_thu_${new Date().toLocaleDateString('vi-VN')}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error("Error exporting excel:", error);
+            alert("Không thể xuất báo cáo. Vui lòng thử lại.");
         }
     };
 
@@ -118,8 +182,11 @@ const AdminAnalytics = () => {
                             <RefreshCcw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                             Làm mới
                         </Button>
-                        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-100 font-bold">
-                            <Download className="w-4 h-4 mr-2" /> Xuất báo cáo
+                        <Button 
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-100 font-bold"
+                            onClick={handleExportExcel}
+                        >
+                            <Download className="w-4 h-4 mr-2" /> Xuất báo cáo (Excel)
                         </Button>
                     </div>
                 </div>
@@ -156,8 +223,30 @@ const AdminAnalytics = () => {
                                 <CardDescription className="text-xs font-bold text-slate-400">Tỷ lệ đóng góp của các cổng thanh toán</CardDescription>
                             </div>
                             <div className="bg-slate-50 p-1 rounded-xl flex gap-1">
-                                <Button size="sm" variant="ghost" className="h-7 text-[10px] font-bold px-3 rounded-lg bg-white shadow-sm">Tháng này</Button>
-                                <Button size="sm" variant="ghost" className="h-7 text-[10px] font-bold px-3 rounded-lg">Quý trước</Button>
+                                <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className={`h-7 text-[10px] font-bold px-3 rounded-lg transition-all ${period === 'month' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}
+                                    onClick={() => handlePeriodChange('month')}
+                                >
+                                    Tháng này
+                                </Button>
+                                <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className={`h-7 text-[10px] font-bold px-3 rounded-lg transition-all ${period === 'quarter' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}
+                                    onClick={() => handlePeriodChange('quarter')}
+                                >
+                                    Quý trước
+                                </Button>
+                                <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className={`h-7 text-[10px] font-bold px-3 rounded-lg transition-all ${period === 'all' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}
+                                    onClick={() => handlePeriodChange('all')}
+                                >
+                                    Tất cả
+                                </Button>
                             </div>
                         </CardHeader>
                         <div className="h-[300px] w-full">
@@ -236,7 +325,16 @@ const AdminAnalytics = () => {
                             <CardTitle className="text-2xl font-black text-slate-800">Giao dịch gần đây</CardTitle>
                             <CardDescription className="text-slate-400 font-bold text-[11px] uppercase tracking-widest mt-1">Lịch sử 10 giao dịch mới nhất</CardDescription>
                         </div>
-                        <Button variant="ghost" className="text-indigo-600 font-bold hover:bg-indigo-50 rounded-xl">Xem tất cả</Button>
+                        <Button 
+                            variant="ghost" 
+                            className="text-indigo-600 font-bold hover:bg-indigo-50 rounded-xl"
+                            onClick={() => {
+                                fetchAllTransactions();
+                                setShowAllModal(true);
+                            }}
+                        >
+                            Xem tất cả
+                        </Button>
                     </CardHeader>
                     <div className="px-4 pb-4 overflow-x-auto">
                         <table className="w-full text-left border-collapse">
@@ -247,7 +345,8 @@ const AdminAnalytics = () => {
                                     <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50">Phương thức</th>
                                     <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50">Số tiền</th>
                                     <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50">Thời gian</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50 text-right">Trạng thái</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50 text-center">Trạng thái</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50 text-right">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -281,8 +380,8 @@ const AdminAnalytics = () => {
                                                     <span className="text-[10px] font-medium text-slate-400">{new Date(tx.createdAt).toLocaleTimeString()}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 border-b border-slate-50 text-right">
-                                                <div className="flex items-center justify-end">
+                                            <td className="px-6 py-4 border-b border-slate-50 text-center">
+                                                <div className="flex items-center justify-center">
                                                     {tx.status === 'SUCCESS' && (
                                                         <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm shadow-emerald-500/5 flex items-center gap-1 font-bold text-[10px] rounded-lg">
                                                             <CheckCircle2 size={10} strokeWidth={3} /> HOÀN TẤT
@@ -300,6 +399,17 @@ const AdminAnalytics = () => {
                                                     )}
                                                 </div>
                                             </td>
+                                            <td className="px-6 py-4 border-b border-slate-50 text-right">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                                                    onClick={() => handleDeleteTransaction(tx.id)}
+                                                    disabled={isDeleting === tx.id}
+                                                >
+                                                    <Trash2 size={16} className={isDeleting === tx.id ? "animate-pulse" : ""} />
+                                                </Button>
+                                            </td>
                                         </tr>
                                     ))
                                 ) : (
@@ -314,6 +424,116 @@ const AdminAnalytics = () => {
                     </div>
                 </Card>
             </div>
+
+            {/* Modal See All Transactions */}
+            {showAllModal && (
+                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in transition-all">
+                    <div className="w-full max-w-6xl bg-white rounded-[3rem] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] h-[90vh] flex flex-col animate-in zoom-in-95 duration-500 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-500" />
+                        
+                        <div className="px-10 pt-10 pb-6 flex items-center justify-between shrink-0">
+                            <div>
+                                <h3 className="text-3xl font-black text-slate-900 tracking-tight leading-none">Toàn bộ giao dịch</h3>
+                                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-2 px-1">Danh sách đầy đủ từ trước đến nay</p>
+                            </div>
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                onClick={() => setShowAllModal(false)}
+                                className="rounded-2xl h-14 w-14 bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                            >
+                                <X size={28} />
+                            </Button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto px-6 pb-10 custom-scrollbar">
+                            <div className="rounded-[2.5rem] border border-slate-100 overflow-hidden">
+                                <table className="w-full text-left border-collapse">
+                                    <thead className="sticky top-0 bg-white z-10 shadow-sm">
+                                        <tr>
+                                            <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50">Người dùng</th>
+                                            <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50">Gói cước</th>
+                                            <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50">Thời gian</th>
+                                            <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50">Số tiền</th>
+                                            <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50 text-center">Trạng thái</th>
+                                            <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50 text-right">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {allTransactions.length > 0 ? (
+                                            allTransactions.map((tx) => (
+                                                <tr key={tx.id} className="group hover:bg-slate-50/50 transition-colors">
+                                                    <td className="px-8 py-5">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-sm border border-indigo-100 ring-4 ring-indigo-500/5">
+                                                                {tx.username.charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="font-bold text-slate-800 leading-none mb-1">{tx.username}</span>
+                                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{tx.paymentMethod}</span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-8 py-5">
+                                                        <Badge variant="outline" className="border-indigo-100 bg-indigo-50/20 text-indigo-600 font-bold rounded-xl px-3 py-1 text-[11px]">
+                                                            {tx.packageName}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="px-8 py-5">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xs font-bold text-slate-600">{new Date(tx.createdAt).toLocaleDateString()}</span>
+                                                            <span className="text-[10px] font-medium text-slate-400">{new Date(tx.createdAt).toLocaleTimeString()}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-8 py-5">
+                                                        <span className="text-base font-black text-slate-900 tracking-tight">{formatCurrency(tx.amount)}</span>
+                                                    </td>
+                                                    <td className="px-8 py-5 text-center">
+                                                        <div className="flex items-center justify-center">
+                                                            {tx.status === 'SUCCESS' && (
+                                                                <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 flex items-center gap-1.5 font-black text-[10px] rounded-xl px-3 py-1.5">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> HOÀN TẤT
+                                                                </Badge>
+                                                            )}
+                                                            {tx.status === 'PENDING' && (
+                                                                <Badge className="bg-amber-50 text-amber-600 border-amber-100 flex items-center gap-1.5 font-black text-[10px] rounded-xl px-3 py-1.5">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> ĐANG CHỜ
+                                                                </Badge>
+                                                            )}
+                                                            {tx.status === 'FAILED' && (
+                                                                <Badge className="bg-rose-50 text-rose-600 border-rose-100 flex items-center gap-1.5 font-black text-[10px] rounded-xl px-3 py-1.5">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> THẤT BẠI
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-8 py-5 text-right">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-10 w-10 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all"
+                                                            onClick={() => handleDeleteTransaction(tx.id)}
+                                                            disabled={isDeleting === tx.id}
+                                                        >
+                                                            <Trash2 size={20} className={isDeleting === tx.id ? "animate-pulse" : ""} />
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="6" className="px-8 py-20 text-center text-slate-400 font-bold italic">
+                                                    Không tìm thấy dữ liệu giao dịch nào.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AdminLayout>
     );
 };

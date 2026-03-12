@@ -39,6 +39,7 @@ export const storyService = {
     getByStatus: (status, page = 0, size = 20) => api.get(`/stories/status/${status}?page=${page}&size=${size}`),
     getPremium: (page = 0, size = 20) => api.get(`/stories/premium?page=${page}&size=${size}`),
     getNewest: (page = 0, size = 20) => api.get(`/stories/new?page=${page}&size=${size}`),
+    getTopRated: (limit = 10) => api.get(`/stories/top-rated?limit=${limit}`),
     create: (story) => api.post('/stories', story),
     update: (id, story) => api.put(`/stories/${id}`, story),
     delete: (id) => api.delete(`/stories/${id}`),
@@ -129,6 +130,18 @@ export const readingProgressService = {
     getAll: () => api.get('/reading-progress'),
     getByStory: (storyId) => api.get(`/reading-progress/${storyId}`),
     saveProgress: (storyId, chapterId) => api.post(`/reading-progress/${storyId}/${chapterId}`),
+};
+
+export const favoriteService = {
+    getMyFavorites: (page = 0, size = 20) => api.get(`/favorites?page=${page}&size=${size}`),
+    toggle: (storyId) => api.post(`/favorites/toggle/${storyId}`),
+    check: (storyId) => api.get(`/favorites/check/${storyId}`),
+};
+
+export const ratingService = {
+    rate: (storyId, stars) => api.post(`/ratings/${storyId}?stars=${stars}`),
+    getRating: (storyId) => api.get(`/ratings/${storyId}`),
+    getMyRating: (storyId) => api.get(`/ratings/${storyId}/my-rating`),
 };
 
 export default api;
