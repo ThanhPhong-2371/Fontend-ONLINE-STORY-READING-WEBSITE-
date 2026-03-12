@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { storyService, getServerUrl } from '../services/api';
-import { Plus, Edit2, Trash2, Search, X, Check, AlertCircle, BookOpen, Clock, Star, Eye, User as UserIcon, Settings, Calendar, Filter } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, X, Check, AlertCircle, BookOpen, Clock, Star, Eye, User as UserIcon, Settings, Calendar, Filter, Lock, LockOpen, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StaffLayout } from '@/components/staff-layout';
@@ -24,6 +24,7 @@ const AdminDashboard = () => {
         isPremium: false
     });
     const [notification, setNotification] = useState(null);
+    const [updatingStoryId, setUpdatingStoryId] = useState(null);
 
     useEffect(() => {
         fetchStories();
@@ -258,18 +259,39 @@ const AdminDashboard = () => {
                                             variant="ghost"
                                             size="icon"
                                             onClick={async () => {
+                                                if (updatingStoryId) return;
+                                                const newPremiumStatus = !story.isPremium;
                                                 try {
-                                                    await storyService.update(story.id, { ...story, isPremium: !story.isPremium });
-                                                    showNotification('success', story.isPremium ? 'Đã mở khóa truyện thành free' : 'Đã khóa truyện thành Premium');
-                                                    fetchStories();
+                                                    setUpdatingStoryId(story.id);
+                                                    // Only send the field we want to change to avoid issues with complex objects
+                                                    await storyService.update(story.id, { isPremium: newPremiumStatus });
+                                                    showNotification('success', newPremiumStatus ? 'Đã khóa truyện (Premium)' : 'Đã mở khóa truyện (Free)');
+                                                    await fetchStories();
                                                 } catch (e) {
-                                                    showNotification('error', 'Không thể thay đổi trạng thái');
+                                                    console.error('Error toggling premium:', e);
+                                                    showNotification('error', 'Không thể thay đổi trạng thái Premium');
+                                                } finally {
+                                                    setUpdatingStoryId(null);
                                                 }
                                             }}
-                                            className={`h-12 w-12 rounded-2xl transition-all ${story.isPremium ? 'text-amber-600 bg-amber-50 hover:bg-amber-100' : 'text-slate-400 hover:bg-slate-50'}`}
+                                            disabled={updatingStoryId === story.id}
+                                            className={`h-12 w-12 rounded-2xl transition-all duration-300 relative group/lock overflow-hidden ${story.isPremium
+                                                ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 shadow-sm shadow-amber-200/20'
+                                                : 'text-slate-400 hover:bg-slate-100'
+                                                }`}
                                             title={story.isPremium ? 'Mở khóa (Miễn phí)' : 'Khóa (Premium)'}
                                         >
-                                            <Star className="h-5 w-5" fill={story.isPremium ? "currentColor" : "none"} />
+                                            <div className="relative z-10">
+                                                {updatingStoryId === story.id ? (
+                                                    <Loader2 className="h-5 w-5 animate-spin text-indigo-500" />
+                                                ) : story.isPremium ? (
+                                                    <Lock className="h-5 w-5 animate-in zoom-in spin-in-12 duration-500" fill="currentColor" fillOpacity={0.2} />
+                                                ) : (
+                                                    <LockOpen className="h-5 w-5 animate-in zoom-in -spin-in-12 duration-500" />
+                                                )}
+                                            </div>
+                                            {/* Ripple/Background effect */}
+                                            <div className={`absolute inset-0 transition-opacity duration-300 ${story.isPremium ? 'bg-amber-100/0 group-hover/lock:bg-amber-100/50' : 'bg-indigo-500/0 group-hover/lock:bg-indigo-500/5'}`} />
                                         </Button>
                                         <Button
                                             variant="ghost"
@@ -389,27 +411,6 @@ const AdminDashboard = () => {
                             className="w-full min-h-[100px] px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-y"
                             placeholder="Viết một đoạn giới thiệu hấp dẫn về cốt truyện..."
                         />
-                    </div>
-
-                    <div
-                        className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all cursor-pointer select-none ${formData.isPremium
-                            ? 'bg-amber-50 border-amber-200 shadow-sm shadow-amber-500/10'
-                            : 'bg-slate-50 border-slate-100 hover:bg-slate-100'
-                            }`}
-                        onClick={() => setFormData(p => ({ ...p, isPremium: !p.isPremium }))}
-                    >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${formData.isPremium
-                            ? 'bg-amber-500 text-white'
-                            : 'bg-white border border-slate-200 text-slate-400'
-                            }`}>
-                            <Star size={18} fill={formData.isPremium ? "currentColor" : "none"} />
-                        </div>
-                        <div className="flex-1">
-                            <span className={`text-sm font-bold block ${formData.isPremium ? 'text-amber-700' : 'text-slate-700'}`}>
-                                Chế độ Premium (VIP Member)
-                            </span>
-                            <span className="text-[10px] uppercase font-bold text-slate-400">Chỉ dành cho tài khoản trả phí truy cập</span>
-                        </div>
                     </div>
 
                     <div className="flex gap-3 justify-end pt-5 border-t border-slate-100 mt-6">

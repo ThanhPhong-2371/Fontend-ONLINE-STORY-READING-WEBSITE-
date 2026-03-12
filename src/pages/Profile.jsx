@@ -14,8 +14,10 @@ const Profile = () => {
         fullName: '',
         email: '',
         newPassword: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        otp: ''
     });
+    const [sendingOtp, setSendingOtp] = useState(false);
     const [avatarFile, setAvatarFile] = useState(null);
     const [avatarPreview, setAvatarPreview] = useState(null);
     const fileInputRef = useRef(null);
@@ -32,7 +34,8 @@ const Profile = () => {
                 fullName: response.data.fullName || '',
                 email: response.data.email || '',
                 newPassword: '',
-                confirmPassword: ''
+                confirmPassword: '',
+                otp: ''
             });
             if (response.data.avatar) {
                 setAvatarPreview(getServerUrl(response.data.avatar));
@@ -42,6 +45,18 @@ const Profile = () => {
             showNotification('error', 'Không thể tải thông tin hồ sơ.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleRequestOtp = async () => {
+        try {
+            setSendingOtp(true);
+            const response = await userService.requestOtp();
+            showNotification('success', response.data || 'Mã xác nhận đã được gửi!');
+        } catch (error) {
+            showNotification('error', error.response?.data || 'Không thể gửi mã xác nhận.');
+        } finally {
+            setSendingOtp(false);
         }
     };
 
@@ -81,7 +96,8 @@ const Profile = () => {
                 fullName: formData.fullName,
                 email: formData.email,
                 avatar: avatarFile,
-                newPassword: formData.newPassword
+                newPassword: formData.newPassword,
+                otp: formData.otp
             };
 
             const response = await userService.updateProfile(dataToUpdate);
@@ -103,9 +119,9 @@ const Profile = () => {
             }));
 
             // Clear password fields
-            setFormData(prev => ({ ...prev, newPassword: '', confirmPassword: '' }));
+            setFormData(prev => ({ ...prev, newPassword: '', confirmPassword: '', otp: '' }));
         } catch (error) {
-            showNotification('error', 'Lỗi khi cập nhật hồ sơ.');
+            showNotification('error', error.response?.data || 'Lỗi khi cập nhật hồ sơ.');
         } finally {
             setSaving(false);
         }
@@ -265,6 +281,31 @@ const Profile = () => {
                                             placeholder="••••••••"
                                         />
                                     </div>
+                                    {(formData.newPassword || formData.confirmPassword) && (
+                                        <div className="col-span-full space-y-2.5 animate-in fade-in slide-in-from-top-2">
+                                            <div className="flex justify-between items-center">
+                                                <label className="text-[12px] font-bold text-slate-600 ml-1">Mã xác nhận (OTP) gửi qua Email</label>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={handleRequestOtp}
+                                                    disabled={sendingOtp}
+                                                    className="h-8 text-amber-600 font-bold hover:text-amber-700 hover:bg-amber-50"
+                                                >
+                                                    {sendingOtp ? <Loader2 className="animate-spin h-3 w-3 mr-2" /> : null}
+                                                    Gửi mã OTP
+                                                </Button>
+                                            </div>
+                                            <Input
+                                                name="otp"
+                                                value={formData.otp}
+                                                onChange={handleInputChange}
+                                                className="h-12 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium transition-all"
+                                                placeholder="Nhập mã 6 chữ số..."
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
