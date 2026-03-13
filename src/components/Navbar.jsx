@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Search, User, Menu, LogOut } from 'lucide-react';
+import { BookOpen, Search, User, Menu, LogOut, Headphones } from 'lucide-react';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -47,6 +47,10 @@ const Navbar = () => {
                         <Link to="/staff">Staff</Link>
                     )}
                     <Link to="/premium" className="premium-link">Premium</Link>
+                    <Link to="/support" className="support-link" title="Hỗ trợ khách hàng">
+                        <Headphones size={18} />
+                        <span>Hỗ trợ</span>
+                    </Link>
                     {user ? (
                         <div className="user-profile">
                             <img

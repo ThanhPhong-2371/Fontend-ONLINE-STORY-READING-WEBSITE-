@@ -6,6 +6,9 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminUserManagement from './pages/AdminUserManagement';
 import Login from './pages/Login';
 import StaffDashboard from './pages/StaffDashboard';
+import ChatBox from './components/ChatBox';
+import SupportChat from './components/SupportChat';
+import AdminSupportPanel from './pages/AdminSupportPanel';
 import './App.css';
 
 function App() {
@@ -22,12 +25,12 @@ function App() {
           {/* Add more routes as you build them */}
           <Route path="/genres" element={<div className="container" style={{ paddingTop: '100px' }}><h2>Trang Thể Loại đang phát triển...</h2></div>} />
           <Route path="/premium" element={<div className="container" style={{ paddingTop: '100px' }}><h2>Trang Premium đang phát triển...</h2></div>} />
+          <Route path="/support" element={<SupportChat />} />
+          <Route path="/admin/support" element={<AdminSupportPanel />} />
         </Routes>
 
-        {/* Floating Chatbot Button Placeholder */}
-        <div className="chatbot-trigger glass">
-          <span>💬</span>
-        </div>
+        {/* Floating Chatbot */}
+        <ChatBox />
       </div>
     </Router>
   );

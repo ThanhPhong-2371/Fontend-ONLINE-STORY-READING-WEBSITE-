@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { userService } from '../services/api';
-import { Plus, Edit2, Trash2, Search, X, Check, AlertCircle, Image as ImageIcon, BookOpen, User as UserIcon, Activity, Lock, Unlock, Download } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, X, Check, AlertCircle, Image as ImageIcon, BookOpen, User as UserIcon, Activity, Lock, Unlock, Download, MessageSquare } from 'lucide-react';
 import './AdminUserManagement.css';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -160,6 +160,7 @@ const AdminUserManagement = () => {
                 </div>
                 <nav className="admin-nav">
                     <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}><UserIcon size={20} /> Người dùng</Link>
+                    <Link to="/admin/support" className={location.pathname === '/admin/support' ? 'active' : ''}><MessageSquare size={20} /> Hỗ trợ CSKH</Link>
                 </nav>
             </aside>
 

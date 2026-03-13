@@ -61,6 +61,33 @@ export const userService = {
     updateRole: (userId, roleIds) => api.post(`/admin/users/${userId}/roles`, roleIds)
 };
 
+export const chatbotService = {
+    ask: (message) => api.post('/chatbot/ask', { message }),
+};
+
+export const mangaSearchService = {
+    search: (query, limit = 10) => api.get(`/manga/search?q=${encodeURIComponent(query)}&limit=${limit}`),
+    recommend: (storyId, limit = 10) => api.get(`/manga/${storyId}/recommend?limit=${limit}`),
+};
+
+export const supportService = {
+    openConversation: (userId) => {
+        const body = typeof userId === 'number' ? { userId } : {};
+        return api.post('/support/conversations', body);
+    },
+    getMessages: (conversationId) => api.get(`/support/conversations/${conversationId}/messages`),
+    // Admin
+    listConversations: (status) => api.get(`/admin/support/conversations${status ? '?status=' + status : ''}`),
+    assignAdmin: (convId, adminId) => api.post(`/admin/support/conversations/${convId}/assign`, { adminId }),
+    closeConversation: (convId) => api.post(`/admin/support/conversations/${convId}/close`),
+    adminReply: (convId, adminId, content) => api.post(`/admin/support/conversations/${convId}/reply`, { adminId, content }),
+    // FAQ
+    listFaq: () => api.get('/admin/support/faq'),
+    createFaq: (faq) => api.post('/admin/support/faq', faq),
+    updateFaq: (id, faq) => api.put(`/admin/support/faq/${id}`, faq),
+    deleteFaq: (id) => api.delete(`/admin/support/faq/${id}`),
+};
+
 export const otruyenService = {
     search: (keyword) => axios.get(`https://otruyenapi.com/v1/api/tim-kiem?keyword=${keyword}`),
     getDetail: (slug) => axios.get(`https://otruyenapi.com/v1/api/truyen-tranh/${slug}`),
