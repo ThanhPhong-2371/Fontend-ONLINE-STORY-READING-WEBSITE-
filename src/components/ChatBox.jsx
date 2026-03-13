@@ -41,8 +41,13 @@ export default function ChatBox() {
     setSearchResults(null);
 
     try {
-      // Call chatbot API
-      const res = await chatbotService.ask(trimmed);
+      // Build conversation history from previous messages (exclude welcome & current message)
+      const history = messages
+        .filter(m => m.role === 'user' || m.role === 'assistant')
+        .map(m => ({ role: m.role === 'bot' ? 'assistant' : m.role, content: m.content }));
+
+      // Call chatbot API with conversation history
+      const res = await chatbotService.ask(trimmed, history);
       const botReply = res.data.response || 'Xin lỗi, tôi không hiểu câu hỏi của bạn.';
       setMessages(prev => [...prev, { role: 'bot', content: botReply }]);
 

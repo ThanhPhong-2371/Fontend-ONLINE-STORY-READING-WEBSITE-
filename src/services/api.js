@@ -62,7 +62,7 @@ export const userService = {
 };
 
 export const chatbotService = {
-    ask: (message) => api.post('/chatbot/ask', { message }),
+    ask: (message, history = []) => api.post('/chatbot/ask', { message, history }),
 };
 
 export const mangaSearchService = {
