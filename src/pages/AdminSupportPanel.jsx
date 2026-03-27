@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { supportService } from '../services/api';
+import { supportService, WS_URL } from '../services/api';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import {
@@ -56,7 +56,7 @@ const AdminSupportPanel = () => {
     // WebSocket connection
     useEffect(() => {
         const client = new Client({
-            webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+            webSocketFactory: () => new SockJS(WS_URL),
             reconnectDelay: 5000,
             onConnect: () => console.log('Admin WS connected'),
         });

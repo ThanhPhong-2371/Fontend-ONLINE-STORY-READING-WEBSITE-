@@ -1,11 +1,12 @@
 import axios from 'axios';
 
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+export const SERVER_URL = API_URL.replace(/\/api\/?$/, '');
+export const WS_URL = import.meta.env.VITE_WS_URL || `${SERVER_URL}/ws`;
 export const getServerUrl = (path) => {
     if (!path) return 'https://github.com/shadcn.png';
     if (path.startsWith('http')) return path;
-    const baseUrl = API_URL.replace('/api', '');
-    return `${baseUrl}${path}`;
+    return `${SERVER_URL}${path}`;
 };
 
 const api = axios.create({

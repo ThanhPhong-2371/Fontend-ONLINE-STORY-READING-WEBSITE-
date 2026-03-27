@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { premiumPackageService } from '@/services/api';
+import { API_URL, premiumPackageService } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -51,7 +51,7 @@ const Checkout = () => {
             setProcessing(true);
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/payment/create-vnpay-url?packageId=${packageId}`, {
+                const response = await fetch(`${API_URL}/payment/create-vnpay-url?packageId=${packageId}`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom"
 import { Eye, BookOpen } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { getServerUrl } from "@/services/api"
 import { formatViews } from "@/lib/data"
 
 interface StoryCardProps {
@@ -12,7 +13,7 @@ export function StoryCard({ story, variant = "default" }: StoryCardProps) {
   const getImageUrl = (url: string) => {
     if (!url) return 'https://via.placeholder.com/300x400?text=No+Cover'
     if (url.startsWith('http')) return url
-    return `http://localhost:8080${url}`
+    return getServerUrl(url)
   }
 
   const isCompleted = story.status === "COMPLETED"
